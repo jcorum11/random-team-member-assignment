@@ -1,7 +1,11 @@
+"use server";
 import { z } from "zod";
-import { sql } from "@vercel/postgres";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { neon } from "@neondatabase/serverless";
+import { isTeammateArray, Teammate } from "./definitions";
+
+const sql = neon(process.env.DATABASE_URL);
 
 const FormSchema = z.object({
   id: z.string(),
@@ -47,7 +51,7 @@ export async function createTeammate(prevState: State, formData: FormData) {
     const { teammateId, name, status, role } = validatedFields.data;
     const date = new Date().toISOString().split("T")[0];
     await sql`
-    INSERT INTO teammates (user_id, name, status, role, date)
+    INSERT INTO teammates (user_id, name, status, role)
     VALUES (${teammateId}, ${name}, ${status}, ${role}, ${date})
   `;
   } catch (error) {
@@ -105,5 +109,14 @@ export async function deleteInvoice(id: string) {
     return {
       message: "Database Error: Failed to Delete Teammate",
     };
+  }
+}
+
+export async function getData() {
+  const response = await sql`SELECT * FROM teammates`;
+  if (isTeammateArray(response)) {
+    return response as Teammate[];
+  } else {
+    return response;
   }
 }
