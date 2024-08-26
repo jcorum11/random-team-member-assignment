@@ -117,8 +117,17 @@ export async function deleteInvoice(id: string) {
   }
 }
 
-export async function getData() {
+export async function getAllTeammates() {
   const response = await sql`SELECT * FROM teammates`;
+  if (isTeammateArray(response)) {
+    return response as Teammate[];
+  } else {
+    return response;
+  }
+}
+
+export async function getTeammatesByRole(role: string) {
+  const response = await sql`SELECT * FROM teammates WHERE role = ${role}`;
   if (isTeammateArray(response)) {
     return response as Teammate[];
   } else {
