@@ -2,10 +2,15 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { neon } from "@neondatabase/serverless";
+import { neon, NeonQueryFunction } from "@neondatabase/serverless";
 import { isTeammateArray, Teammate } from "./definitions";
 
-const sql = neon(process.env.DATABASE_URL);
+let sql: NeonQueryFunction<false, false>;
+if (process.env.DATABASE_URL) {
+  sql = neon(process.env.DATABASE_URL);
+} else {
+  throw new Error("environment variable is not set");
+}
 
 const FormSchema = z.object({
   id: z.string(),
