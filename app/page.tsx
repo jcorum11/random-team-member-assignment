@@ -1,16 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getAllTeammates, getTeammatesByRole } from "./lib/actions";
-import { isTeammateArray, Teammate } from "./lib/definitions";
-import { generateRandomTeamMember } from "./lib/utils";
-import { get } from "http";
-
-// import { useActionState } from "react";
-// import { createTeammate, State } from "./lib/actions";
+import {
+  getAllTeammates,
+  getTeammatesByRole,
+  updateTeammate,
+} from "./lib/actions";
+import { isTeammateArray, roles, Teammate } from "./lib/definitions";
+import { generateRandomTeamMember, sortResponse } from "./lib/utils";
 
 export default function Home() {
   let [randomTeammates, setRandomTeammates] = useState<Teammate[]>([]);
+  let [currentTeammatePool, setCurrentTeammatePool] = useState<Teammate[]>([]);
   let [isFetchingData, setIsFetchingData] = useState<boolean>(true);
   let [teammates, setTeammates] = useState<Teammate[]>([]);
   let [currentButtonEditingId, setCurrentButtonEditingId] =
@@ -20,11 +21,12 @@ export default function Home() {
   let [editingTeammateRole, setEditingTeammateRole] = useState<string>("");
   let [currentRoleFilter, setCurrentRoleFilter] = useState<string>("All");
 
-  // const [state, formAction] = useActionState(createTeammate, initialState);
   useEffect(() => {
     getAllTeammates().then((response) => {
       if (isTeammateArray(response)) {
-        setTeammates(response);
+        const sortedResponse = sortResponse(response);
+        setTeammates(sortedResponse);
+        setCurrentTeammatePool(sortedResponse);
         setIsFetchingData(false);
       } else {
         throw new Error("Response is not a Teammate array");
@@ -32,24 +34,11 @@ export default function Home() {
     });
   }, []);
 
-  const roles = [
-    "All",
-    "Frontend",
-    "Backend",
-    "Product",
-    "Designer",
-    "Devops",
-    "Manager",
-  ];
-
   return (
     <div>
       <h1 className="container mx-auto text-center">
         Random Team Member Selector
       </h1>
-
-      {/* <form action={formAction}></form> */}
-      {/* <input type="text" placeholder="Enter team member name" /> */}
       <div>
         filters
         {roles.map((role) => {
@@ -57,17 +46,22 @@ export default function Home() {
             <button
               key={role}
               className="outline outline-purple-500 bg-purple-400 mx-5 px-4"
-              onClick={() => {
+              onClick={async () => {
+                setRandomTeammates([]);
+                let teammates;
+                setCurrentRoleFilter(role);
                 if (role === "All") {
-                  getAllTeammates().then(
-                    (teammates) =>
-                      isTeammateArray(teammates) && setTeammates(teammates)
-                  );
+                  teammates = await getAllTeammates();
+                  if (isTeammateArray(teammates)) {
+                    const sortedResponse = sortResponse(teammates);
+                    setTeammates(sortedResponse);
+                  }
                 } else {
-                  getTeammatesByRole(role).then(
-                    (teammates) =>
-                      isTeammateArray(teammates) && setTeammates(teammates)
-                  );
+                  teammates = await getTeammatesByRole(role);
+                  if (isTeammateArray(teammates)) {
+                    const sortedResponse = sortResponse(teammates);
+                    setTeammates(sortedResponse);
+                  }
                 }
               }}
             >
@@ -85,26 +79,33 @@ export default function Home() {
               <button
                 className="outline outline-purple-500 bg-purple-400 mx-5 px-4"
                 key={teammate.id}
-                onClick={() => setCurrentButtonEditingId(teammate.id)}
+                onClick={() => {
+                  setEditingTeammateName(teammate.name);
+                  setEditingTeammateStatus(teammate.status);
+                  setEditingTeammateRole(teammate.role);
+                  setCurrentButtonEditingId(teammate.id);
+                }}
               >
                 {currentButtonEditingId === teammate.id ? (
                   <>
                     <input
                       className="text-black block mb-1"
                       type="text"
-                      value={teammate.name}
+                      value={editingTeammateName}
                       onChange={(e) => setEditingTeammateName(e.target.value)}
                     />
                     <input
                       className="text-black block mb-1"
                       type="text"
-                      value={teammate.status}
-                      onChange={(e) => setEditingTeammateStatus(e.target.value)}
+                      value={editingTeammateStatus}
+                      onChange={(e) => {
+                        setEditingTeammateStatus(e.target.value);
+                      }}
                     />
                     <input
                       className="text-black block"
                       type="text"
-                      value={teammate.role}
+                      value={editingTeammateRole}
                       onChange={(e) => setEditingTeammateRole(e.target.value)}
                     />
                   </>
@@ -120,18 +121,50 @@ export default function Home() {
           })
         )}
         {currentButtonEditingId && (
-          <button onClick={() => setCurrentButtonEditingId("")}>Save</button>
+          <button
+            onClick={async () => {
+              await updateTeammate({
+                id: currentButtonEditingId,
+                name: editingTeammateName,
+                status: editingTeammateStatus,
+                role: editingTeammateRole,
+              });
+              let teammates;
+              if (currentRoleFilter === "All") {
+                teammates = await getAllTeammates();
+                if (isTeammateArray(teammates)) {
+                  const sortedResponse = sortResponse(teammates);
+                  setTeammates(sortedResponse);
+                }
+              } else {
+                teammates = await getTeammatesByRole(currentRoleFilter);
+                if (isTeammateArray(teammates)) {
+                  const sortedResponse = sortResponse(teammates);
+                  setTeammates(sortedResponse);
+                }
+              }
+              setCurrentButtonEditingId("");
+            }}
+          >
+            Save
+          </button>
         )}
       </div>
       <div className="outline outline-red-700 container mx-auto p-4 h-96">
         <button
           className="outline outline-red-500 bg-red-400 mx-5 px-4"
-          onClick={() =>
-            setRandomTeammates([
-              ...randomTeammates,
-              generateRandomTeamMember(teammates),
-            ])
-          }
+          onClick={() => {
+            if (currentTeammatePool.length !== 0) {
+              const randomTeammate =
+                generateRandomTeamMember(currentTeammatePool);
+              setCurrentTeammatePool(
+                currentTeammatePool.filter(
+                  (teammate) => randomTeammate.id !== teammate.id
+                )
+              );
+              setRandomTeammates([...randomTeammates, randomTeammate]);
+            }
+          }}
         >
           Pick Random Team Members
         </button>
@@ -148,7 +181,14 @@ export default function Home() {
           );
         })}
         {randomTeammates.length > 0 && (
-          <button onClick={() => setRandomTeammates([])}>Clear</button>
+          <button
+            onClick={() => {
+              setRandomTeammates([]);
+              setCurrentTeammatePool(teammates);
+            }}
+          >
+            Clear
+          </button>
         )}
       </div>
     </div>

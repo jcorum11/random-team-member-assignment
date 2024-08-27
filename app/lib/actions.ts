@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { neon, NeonQueryFunction } from "@neondatabase/serverless";
 import { isTeammateArray, Teammate } from "./definitions";
 
-let sql: NeonQueryFunction<false, false>;
+export let sql: NeonQueryFunction<false, false>;
 if (process.env.DATABASE_URL) {
   sql = neon(process.env.DATABASE_URL);
 } else {
@@ -14,22 +14,16 @@ if (process.env.DATABASE_URL) {
 
 const FormSchema = z.object({
   id: z.string(),
-  userId: z.string(),
-  teammateId: z.string({
-    invalid_type_error: "Please select a Teammate",
-  }),
   name: z.string(),
-  status: z.enum(["active", "inactive"]),
+  status: z.string(),
   role: z.enum(["Frontend", "Backend", "Product", "Design", "Devops"]),
-  date: z.string(),
 });
 
-const CreateTeammate = FormSchema.omit({ id: true, userId: true, date: true });
-const UpdateTeammate = FormSchema.omit({ id: true, userId: true, date: true });
+const CreateTeammate = FormSchema.omit({ id: true });
+const UpdateTeammate = FormSchema.omit({ id: true });
 
 export type State = {
   errors?: {
-    teammateId?: string[];
     name?: string[];
     status?: string[];
     role?: string[];
@@ -40,7 +34,6 @@ export type State = {
 export async function createTeammate(prevState: State, formData: FormData) {
   try {
     const validatedFields = CreateTeammate.safeParse({
-      teammateId: formData.get("teammateId"),
       name: formData.get("name"),
       status: formData.get("status"),
       role: formData.get("role"),
@@ -53,11 +46,10 @@ export async function createTeammate(prevState: State, formData: FormData) {
       };
     }
 
-    const { teammateId, name, status, role } = validatedFields.data;
-    const date = new Date().toISOString().split("T")[0];
+    const { name, status, role } = validatedFields.data;
     await sql`
     INSERT INTO teammates (user_id, name, status, role)
-    VALUES (${teammateId}, ${name}, ${status}, ${role}, ${date})
+    VALUES (${name}, ${status}, ${role})
   `;
   } catch (error) {
     return {
@@ -69,17 +61,12 @@ export async function createTeammate(prevState: State, formData: FormData) {
   redirect("/");
 }
 
-export async function updateTeammate(
-  id: string,
-  prevState: State,
-  formData: FormData
-) {
+export async function updateTeammate(teammate: Teammate) {
   try {
     const validatedFields = UpdateTeammate.safeParse({
-      teammateId: formData.get("teammateId"),
-      name: formData.get("name"),
-      status: formData.get("status"),
-      role: formData.get("role"),
+      name: teammate.name,
+      status: teammate.status,
+      role: teammate.role,
     });
 
     if (!validatedFields.success) {
@@ -89,12 +76,12 @@ export async function updateTeammate(
       };
     }
 
-    const { teammateId, name, status, role } = validatedFields.data;
+    const { name, status, role } = validatedFields.data;
 
     await sql`
     UPDATE teammates
-    SET teammate_id = ${teammateId}, name = ${name}, status = ${status}, role = ${role}
-    WHERE id = ${id}
+    SET name = ${name}, status = ${status}, role = ${role}
+    WHERE id = ${teammate.id}
   `;
   } catch (error) {
     return {

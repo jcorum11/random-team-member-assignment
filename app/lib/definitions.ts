@@ -5,6 +5,16 @@ export type Teammate = {
   role: string;
 };
 
+export const roles = [
+  "All",
+  "Frontend",
+  "Backend",
+  "Product",
+  "Designer",
+  "Devops",
+  "Manager",
+];
+
 export function isTeammate(object: any): object is Teammate {
   return (
     "id" in object && "name" in object && "status" in object && "role" in object
