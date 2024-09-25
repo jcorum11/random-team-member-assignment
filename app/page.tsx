@@ -60,22 +60,28 @@ export default function Home() {
   return (
     <div>
       <Header />
-      <div>
+      <div className="container mx-auto mb-5">
         filters
         {roles.map((role) => {
           return (
-            <FilterButton key={role} role={role} clickFilter={clickFilter} />
+            <FilterButton
+              key={role}
+              role={role}
+              activeRole={currentRoleFilter}
+              clickFilter={clickFilter}
+            />
           );
         })}
       </div>
       <div className="outline outline-red-700 container mx-auto p-4 h-96">
+        <p className="mx-5 mb-5">Teammate Pool</p>
         {isFetchingData ? (
           <p>loading</p>
         ) : (
           teammates.map((teammate) => {
             return (
               <button
-                className="outline outline-purple-500 bg-purple-400 mx-5 px-4"
+                className="outline outline-purple-500 bg-purple-400 mx-5 px-4 mb-5 rounded-md hover:bg-purple-500"
                 key={teammate.id}
                 onClick={() => {
                   setEditingTeammateName(teammate.name);
@@ -150,7 +156,7 @@ export default function Home() {
       </div>
       <div className="outline outline-red-700 container mx-auto p-4 h-96">
         <button
-          className="outline outline-red-500 bg-red-400 mx-5 px-4"
+          className="block outline outline-red-500 bg-red-400 mx-5 mb-5 px-4 rounded-full hover:bg-red-500"
           onClick={() => {
             if (currentTeammatePool.length !== 0) {
               const randomTeammate =
@@ -169,7 +175,7 @@ export default function Home() {
         {randomTeammates.map((randomTeammate) => {
           return (
             <button
-              className="outline outline-purple-500 bg-purple-400 mx-5 px-4"
+              className="outline outline-purple-500 bg-purple-400 rounded-md mx-5 mb-5 px-4"
               key={randomTeammate.id}
             >
               <div>{randomTeammate.name}</div>
