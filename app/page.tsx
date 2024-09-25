@@ -8,6 +8,8 @@ import {
 } from "./lib/actions";
 import { isTeammateArray, roles, Teammate } from "./lib/definitions";
 import { generateRandomTeamMember, sortResponse } from "./lib/utils";
+import Header from "./components/header";
+import FilterButton from "./components/filterButton";
 
 export default function Home() {
   let [randomTeammates, setRandomTeammates] = useState<Teammate[]>([]);
@@ -34,39 +36,35 @@ export default function Home() {
     });
   }, []);
 
+  async function clickFilter(role: string) {
+    setRandomTeammates([]);
+    setCurrentRoleFilter(role);
+    let teammates;
+    if (role === "All") {
+      teammates = await getAllTeammates();
+      if (isTeammateArray(teammates)) {
+        const sortedResponse = sortResponse(teammates);
+        setTeammates(sortedResponse);
+        setCurrentTeammatePool(sortedResponse);
+      }
+    } else {
+      teammates = await getTeammatesByRole(role);
+      if (isTeammateArray(teammates)) {
+        const sortedResponse = sortResponse(teammates);
+        setTeammates(sortedResponse);
+        setCurrentTeammatePool(sortedResponse);
+      }
+    }
+  }
+
   return (
     <div>
-      <h1 className="container mx-auto text-center">
-        Random Team Member Selector
-      </h1>
+      <Header />
       <div>
         filters
         {roles.map((role) => {
           return (
-            <button
-              key={role}
-              className="outline outline-purple-500 bg-purple-400 mx-5 px-4"
-              onClick={async () => {
-                setRandomTeammates([]);
-                let teammates;
-                setCurrentRoleFilter(role);
-                if (role === "All") {
-                  teammates = await getAllTeammates();
-                  if (isTeammateArray(teammates)) {
-                    const sortedResponse = sortResponse(teammates);
-                    setTeammates(sortedResponse);
-                  }
-                } else {
-                  teammates = await getTeammatesByRole(role);
-                  if (isTeammateArray(teammates)) {
-                    const sortedResponse = sortResponse(teammates);
-                    setTeammates(sortedResponse);
-                  }
-                }
-              }}
-            >
-              {role}
-            </button>
+            <FilterButton key={role} role={role} clickFilter={clickFilter} />
           );
         })}
       </div>
