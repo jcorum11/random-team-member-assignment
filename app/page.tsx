@@ -126,6 +126,7 @@ export default function Home() {
         )}
         {currentButtonEditingId && (
           <button
+            className="outline outline-blue-500 bg-blue-400 px-4 rounded-full hover:bg-blue-500"
             onClick={async () => {
               await updateTeammate({
                 id: currentButtonEditingId,
@@ -156,7 +157,7 @@ export default function Home() {
       </div>
       <div className="outline outline-red-700 container mx-auto p-4 h-96">
         <button
-          className="block outline outline-red-500 bg-red-400 mx-5 mb-5 px-4 rounded-full hover:bg-red-500"
+          className="block outline outline-blue-500 bg-blue-400 mx-5 mb-5 px-4 rounded-full hover:bg-blue-500"
           onClick={() => {
             if (currentTeammatePool.length !== 0) {
               const randomTeammate =
@@ -186,6 +187,7 @@ export default function Home() {
         })}
         {randomTeammates.length > 0 && (
           <button
+            className="outline outline-red-500 bg-red-400 px-4 rounded-full hover:bg-red-500"
             onClick={() => {
               setRandomTeammates([]);
               setCurrentTeammatePool(teammates);
