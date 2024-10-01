@@ -13,15 +13,17 @@ import { generateRandomTeamMember, sortResponse } from "./lib/utils";
 import Header from "./components/header";
 import FilterButton from "./components/filterButton";
 
-// TODO: status filter: click status filter turns into an input that will filter by string (add pen icon)
-// TODO: move status below role on buttons
-// TODO: add a delete/add button to teammates
+// ordered by priority
+// TODO: filter button color on hover should be blue not purple (prod blue color not working for filter?)
 // TODO: add pen icon to teammate buttons so its clear that it can be edited
+// TODO: fix space bug on edit state
+// TODO: mobile sizes
+// TODO: filter buttons when wrap spacing on smaller screens
+// TODO: add a delete/add button to teammates
 // TODO: add a discard button to edit state (next to save)
 // TODO: test that changing role and then filtering works well
-// TODO: fix space bug on edit state
+// TODO: move status below role on buttons
 // TODO: Tech debt: components, state management?
-// TODO: filter button color on hover should be blue not purple
 
 export default function Home() {
   let [randomTeammates, setRandomTeammates] = useState<Teammate[]>([]);
