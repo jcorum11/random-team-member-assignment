@@ -7,6 +7,7 @@ export type Teammate = {
 
 export const roles = [
   "All",
+  "Devs",
   "Frontend",
   "Backend",
   "Product",

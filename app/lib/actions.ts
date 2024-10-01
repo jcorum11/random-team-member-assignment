@@ -121,3 +121,13 @@ export async function getTeammatesByRole(role: string) {
     return response;
   }
 }
+
+export async function getDevs() {
+  const response =
+    await sql`SELECT * FROM teammates WHERE (role = 'Frontend') OR (role = 'Backend')`;
+  if (isTeammateArray(response)) {
+    return response as Teammate[];
+  } else {
+    return response;
+  }
+}

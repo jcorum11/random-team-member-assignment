@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   getAllTeammates,
+  getDevs,
   getTeammatesByRole,
   updateTeammate,
 } from "./lib/actions";
@@ -12,13 +13,14 @@ import Header from "./components/header";
 import FilterButton from "./components/filterButton";
 
 // TODO: status filter: click status filter turns into an input that will filter by string (add pen icon)
-// TODO: devs filter: BE + FE
 // TODO: move status below role on buttons
 // TODO: add a delete/add button to teammates
 // TODO: add pen icon to teammate buttons so its clear that it can be edited
 // TODO: add a discard button to edit state (next to save)
 // TODO: test that changing role and then filtering works well
 // TODO: fix space bug on edit state
+// TODO: Tech debt: components, state management?
+// TODO: filter button color on hover should be blue not purple
 
 export default function Home() {
   let [randomTeammates, setRandomTeammates] = useState<Teammate[]>([]);
@@ -51,18 +53,15 @@ export default function Home() {
     let teammates;
     if (role === "All") {
       teammates = await getAllTeammates();
-      if (isTeammateArray(teammates)) {
-        const sortedResponse = sortResponse(teammates);
-        setTeammates(sortedResponse);
-        setCurrentTeammatePool(sortedResponse);
-      }
+    } else if (role === "Devs") {
+      teammates = await getDevs();
     } else {
       teammates = await getTeammatesByRole(role);
-      if (isTeammateArray(teammates)) {
-        const sortedResponse = sortResponse(teammates);
-        setTeammates(sortedResponse);
-        setCurrentTeammatePool(sortedResponse);
-      }
+    }
+    if (isTeammateArray(teammates)) {
+      const sortedResponse = sortResponse(teammates);
+      setTeammates(sortedResponse);
+      setCurrentTeammatePool(sortedResponse);
     }
   }
 
