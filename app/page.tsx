@@ -5,6 +5,7 @@ import {
   getAllTeammates,
   getDevs,
   getTeammatesByRole,
+  getTeammatesByStatus,
   updateTeammate,
 } from "./lib/actions";
 import { isTeammateArray, roles, Teammate } from "./lib/definitions";
@@ -47,19 +48,30 @@ export default function Home() {
     });
   }, []);
 
-  async function clickFilter(role: string) {
+  async function clickFilter(filterName: string, status?: string) {
     setRandomTeammates([]);
-    setCurrentRoleFilter(role);
-    let teammates;
-    if (role === "All") {
-      teammates = await getAllTeammates();
-    } else if (role === "Devs") {
-      teammates = await getDevs();
-    } else {
-      teammates = await getTeammatesByRole(role);
+    setCurrentRoleFilter(filterName);
+
+    let filteredTeammates;
+    switch (filterName) {
+      case "All":
+        filteredTeammates = await getAllTeammates();
+        break;
+      case "Devs":
+        filteredTeammates = await getDevs();
+        break;
+      case "Status":
+        if (status) {
+          filteredTeammates = await getTeammatesByStatus(status);
+        }
+        break;
+      default:
+        filteredTeammates = await getTeammatesByRole(filterName);
+        break;
     }
-    if (isTeammateArray(teammates)) {
-      const sortedResponse = sortResponse(teammates);
+
+    if (isTeammateArray(filteredTeammates)) {
+      const sortedResponse = sortResponse(filteredTeammates);
       setTeammates(sortedResponse);
       setCurrentTeammatePool(sortedResponse);
     }
@@ -77,6 +89,7 @@ export default function Home() {
               role={role}
               activeRole={currentRoleFilter}
               clickFilter={clickFilter}
+              isStatus={role === "Status"}
             />
           );
         })}
@@ -123,7 +136,7 @@ export default function Home() {
                   </>
                 ) : (
                   <>
-                    <div>{teammate.name}</div>
+                    <div className="inline">{teammate.name}</div>{" "}
                     <div>{teammate.status}</div>
                     <div>{teammate.role}</div>
                   </>

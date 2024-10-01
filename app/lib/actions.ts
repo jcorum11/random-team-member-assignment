@@ -131,3 +131,13 @@ export async function getDevs() {
     return response;
   }
 }
+
+export async function getTeammatesByStatus(status: string | undefined) {
+  const response = await sql`SELECT * FROM teammates WHERE status = ${status}`;
+  console.log(response);
+  if (isTeammateArray(response)) {
+    return response as Teammate[];
+  } else {
+    return response;
+  }
+}

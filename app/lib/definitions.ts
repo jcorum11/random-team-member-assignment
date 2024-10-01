@@ -14,6 +14,7 @@ export const roles = [
   "Designer",
   "Devops",
   "Manager",
+  "Status",
 ];
 
 export function isTeammate(object: any): object is Teammate {
