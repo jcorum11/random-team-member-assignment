@@ -24,6 +24,7 @@ import FilterButton from "./components/filterButton";
 // TODO: test that changing role and then filtering works well
 // TODO: move status below role on buttons
 // TODO: Tech debt: components, state management?
+// TODO: emoji options for statuses
 
 export default function Home() {
   let [randomTeammates, setRandomTeammates] = useState<Teammate[]>([]);
